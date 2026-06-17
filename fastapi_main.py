@@ -1,10 +1,6 @@
-# fastapi_main.py
 """
 OmniControl AI - Proctoring Engine Backend
-All-in-one single-file Python FastAPI server.
-
-Requirements:
-    pip install fastapi uvicorn opencv-python google-generativeai pydantic
+All-in-one single-file Python FastAPI server modified for Vercel Serverless.
 """
 
 from fastapi import FastAPI, Request, HTTPException
@@ -68,15 +64,12 @@ async def get_logs():
 
 @app.post("/api/sync-log-entry")
 async def sync_log_entry(entry: LogEntry):
-    # Convert epoch millis to local HH:MM:SS string
     local_struct = time.localtime(entry.startTime / 1000.0)
     timestamp = time.strftime("%H:%M:%S", local_struct)
     
-    # Format a readable action label
     action_label = entry.status.replace("Looking ", "").replace(" (Away)", "")
     log_string = f"[{timestamp}] - {action_label} for {entry.duration:.1f}s"
     
-    # Add to the matching historical database arrays
     logs_db.insert(0, log_string)
     detailed_logs_db.insert(0, {
         "startTime": entry.startTime,
@@ -98,7 +91,6 @@ async def clear_logs():
 @app.post("/api/generate-summary")
 async def generate_summary(data: GenerateReportRequest):
     try:
-        # Check for Gemini API key
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             return JSONResponse(
@@ -106,15 +98,12 @@ async def generate_summary(data: GenerateReportRequest):
                 content={"error": "GEMINI_API_KEY environment variable is not defined on the server host."}
             )
         
-        # Import and configure Python Generative AI SDK
         import google.generativeai as genai
         genai.configure(api_key=api_key)
         
-        # Format distractions markdown log list
         logs_markdown = ""
         if data.events:
             for idx, e in enumerate(data.events):
-                # Calculate simple relative seconds offset from the first incident
                 offset = int((e.startTime - data.events[-1].startTime) / 1000.0)
                 logs_markdown += f"- [Offset {offset:+}s] Incident: {e.status}, Duration: {e.duration:.1f} seconds\n"
         else:
@@ -146,7 +135,6 @@ Please generate an evaluation report with these exact sections in clean Markdown
 Ensure your tone is completely objective and professional. Do not write generic greetings/salutations in the output.
 """
 
-        # Generate using standard lightweight Gemini model
         model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt)
         
@@ -163,13 +151,23 @@ Ensure your tone is completely objective and professional. Do not write generic 
             content={"error": f"An error occurred on the Python host while generating your report: {str(e)}"}
         )
 
-# --- Optional OpenCV Video Feed Route ---
+# --- OpenCV Video Feed Route (Vercel Safe Option) ---
 camera = None
 
 def get_camera_frame():
     global camera
+    
+    # VERIFICATION: Agar code Vercel cloud par chal raha hai to actual camera open na karein (taake server crash na ho)
+    if os.environ.get("VERCEL") == "1":
+        dummy_frame = cv2.Mat.zeros(480, 640, cv2.CV_8UC3)
+        cv2.putText(dummy_frame, "Live Stream Hosted (Cloud Node Active)", (80, 240),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+        ret, jpeg = cv2.imencode('.jpg', dummy_frame)
+        return jpeg.tobytes()
+
+    # Local environment ke liye camera handle
     if camera is None:
-        camera = cv2.VideoCapture(0) # Open default laptop webcam
+        camera = cv2.VideoCapture(0)
     
     success, frame = camera.read()
     if not success:
@@ -187,14 +185,12 @@ def gen_frames():
         frame_bytes = get_camera_frame()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-        time.sleep(0.04) # ~25FPS
+        time.sleep(0.04)
 
 @app.get('/video_feed')
 def video_feed():
     return StreamingResponse(gen_frames(), media_type='multipart/x-mixed-replace; boundary=frame')
 
-# --- Local Runner Launch Configuration ---
 if __name__ == "__main__":
     import uvicorn
-    # Listens on Port 8000/8001
     uvicorn.run("fastapi_main:app", host="127.0.0.1", port=8000, reload=True)
