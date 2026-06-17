@@ -6,7 +6,7 @@
       "use": "@vercel/python"
     },
     {
-      "src": "single_index.html",
+      "src": "index.html",
       "use": "@vercel/static"
     }
   ],
@@ -29,7 +29,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "single_index.html"
+      "dest": "index.html"
     }
   ]
 }
