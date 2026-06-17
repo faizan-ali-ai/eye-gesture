@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniControl AI - Professional Live Proctoring Portal</title>
+    
+    <!-- CDNs of CSS utility libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- MediaPipe Neural Calibration CDNs -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+
+    <style>
+        /* Import Futuristic Tech fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            overflow-x: hidden;
+            color: #f1f5f9;
+        }
+
+        h1, h2, h3, h4, .font-heading {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Glassmorphism panel styling */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(88, 166, 255, 0.08); /* Cyberpunk blue frame tint */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(88, 166, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        /* Custom glowing text and borders */
+        .cyber-glow {
+            text-shadow: 0 0 12px rgba(88, 166, 255, 0.6);
+        }
+
+        .border-glow-success {
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.15);
+            border-color: rgba(34, 197, 94, 0.25);
+        }
+
+        .border-glow-hazard {
+            box-shadow: 0 0 15px rgba(248, 81, 73, 0.15);
+            border-color: rgba(248, 81, 73, 0.25);
+        }
+
+        /* Loading indicator loop */
+        .spinner {
+            border-top-color: #58a6ff;
+            animation: spinner-spin 0.8s linear infinite;
+        }
+
+        @keyframes spinner-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(88, 166, 255, 0.3);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(88, 166, 255, 0.5);
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .cursor-blink {
+            animation: blink 0.8s step-end infinite;
+        }
+
+        /* Light Mode custom CSS overrides */
+        body.light-mode {
+            background-color: #f8fafc; /* Gentle slate-white background */
+            color: #0f172a;
+        }
+
+        body.light-mode header {
+            background-color: rgba(248, 250, 252, 0.8) !important;
+            border-bottom-color: rgba(37, 99, 235, 0.2) !important;
+        }
+
+        body.light-mode header h1 {
+            color: #0f172a !important;
+        }
+
+        body.light-mode .glass-panel {
+            background: rgba(255, 255, 255, 0.85) !important;
+            border: 1px solid rgba(88, 166, 255, 0.28) !important;
+            box-shadow: 0 10px 30px -5px rgba(148, 163, 184, 0.15), 0 4px 6px -2px rgba(148, 163, 184, 0.05) !important;
+        }
+
+        body.light-mode .glass-panel:hover {
+            border-color: rgba(37, 99, 235, 0.35) !important;
+        }
+
+        body.light-mode .cyber-glow {
+            text-shadow: 0 0 10px rgba(37, 99, 235, 0.15) !important;
+            color: #1d4ed8 !important; /* Elegant sapphire blue */
+        }
+
+        body.light-mode .text-slate-400 {
+            color: #475569 !important; /* Enhanced readability for secondary text */
+        }
+
+        body.light-mode .text-slate-300 {
+            color: #334155 !important;
+        }
+
+        body.light-mode .text-slate-200 {
+            color: #1e293b !important;
+        }
+
+        body.light-mode .text-white {
+            color: #0f172a !important;
+        }
+
+        body.light-mode h1, body.light-mode h2, body.light-mode h3, body.light-mode h4, body.light-mode .font-heading {
+            color: #0f172a !important;
+        }
+
+        body.light-mode input, body.light-mode select {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border-color: rgba(88, 166, 255, 0.3) !important;
+        }
+        body.light-mode input::placeholder {
+            color: #94a3b8 !important; /* Crisp placeholder */
+        }
+
+        /* Essential background panels with proper double backslash escapes for Tailwind classes in raw CSS */
+        body.light-mode .bg-slate-950,
+        body.light-mode .bg-slate-950\/70,
+        body.light-mode .bg-slate-950\/60,
+        body.light-mode .bg-\[\#090d16\]\/95,
+        body.light-mode .bg-\[\#090d16\]\/80,
+        body.light-mode .bg-\[\#090d16\]\/60,
+        body.light-mode .bg-\[\#090d16\]\/40,
+        body.light-mode .bg-\[\#090d16\]\/30,
+        body.light-mode .bg-\[\#161b22\]\/70 {
+            background-color: #e2e8f0 !important; /* Soft backdrop slate in light theme */
+            border-color: rgba(37, 99, 235, 0.15) !important;
+            color: #334155 !important;
+        }
+
+        /* Give specific inner status strips a crystal white surface */
+        body.light-mode .bg-slate-950\/60,
+        body.light-mode .bg-\[\#090d16\]\/60 {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            border-color: rgba(37, 99, 235, 0.18) !important;
+            color: #1e293b !important;
+        }
+
+        body.light-mode #mediaBox {
+            background-color: #cbd5e1 !important;
+            border-color: rgba(88, 166, 255, 0.3) !important;
+        }
+
+        body.light-mode #localProcessingFrame video {
+            opacity: 0.9 !important;
+        }
+
+        body.light-mode #emptyLogsPlaceholder {
+            background-color: rgba(226, 232, 240, 0.5) !important;
+            border-color: rgba(88, 166, 255, 0.2) !important;
+        }
+        
+        body.light-mode ::-webkit-scrollbar-track {
+            background: rgba(226, 232, 240, 0.6) !important;
+        }
+        
+        body.light-mode ::-webkit-scrollbar-thumb {
+            background: rgba(37, 99, 235, 0.3) !important;
+        }
+
+        /* Compliance & Victory success levels */
+        body.light-mode .text-emerald-400 {
+            color: #16a34a !important; /* Distinct dark green */
+        }
+        body.light-mode .border-emerald-500\/20 {
+            border-color: rgba(22, 163, 74, 0.3) !important;
+        }
+        body.light-mode .bg-emerald-500\/10 {
+            background-color: rgba(22, 163, 74, 0.08) !important;
+        }
+
+        /* Danger state variables */
+        body.light-mode .text-\[\#f85149\] {
+            color: #dc2626 !important; /* Vivid red for warnings */
+        }
+        body.light-mode .bg-\[\#f85149\]\/10 {
+            background-color: rgba(220, 38, 38, 0.08) !important;
+        }
+        body.light-mode .border-\[\#f85149\]\/20 {
+            border-color: rgba(220, 38, 38, 0.25) !important;
+        }
+
+        /* Custom Brand deep sapphire text colors */
+        body.light-mode .text-\[\#58a6ff\],
+        body.light-mode .text-\[\#5c98ff\] {
+            color: #1d4ed8 !important; /* Deep sapphire blue */
+        }
+        body.light-mode .bg-\[\#58a6ff\]\/10 {
+            background-color: rgba(37, 99, 235, 0.08) !important;
+        }
+        body.light-mode .border-\[\#58a6ff\]\/30 {
+            border-color: rgba(37, 99, 235, 0.3) !important;
+        }
+        body.light-mode .border-\[\#58a6ff\]\/20 {
+            border-color: rgba(37, 99, 235, 0.22) !important;
+        }
+        body.light-mode .border-\[\#58a6ff\]\/15 {
+            border-color: rgba(37, 99, 235, 0.15) !important;
+        }
+        body.light-mode .border-\[\#58a6ff\]\/10 {
+            border-color: rgba(37, 99, 235, 0.1) !important;
+        }
+
+        /* Active/Inactive switcher button combinations */
+        body.light-mode .bg-slate-800 {
+            background-color: rgba(226, 232, 240, 0.9) !important;
+            color: #334155 !important;
+        }
+        body.light-mode .bg-slate-800:hover {
+            background-color: rgba(203, 213, 225, 0.9) !important;
+        }
+        body.light-mode .hover\:bg-slate-700:hover {
+            background-color: rgba(203, 213, 225, 0.9) !important;
+        }
+        body.light-mode .text-slate-300 {
+            color: #334155 !important;
+        }
+        body.light-mode .bg-\[\#58a6ff\].text-slate-950 {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+        }
+
+        /* General thin border elements */
+        body.light-mode .border-white\/5 {
+            border-color: rgba(37, 99, 235, 0.1) !important;
+        }
+        body.light-mode .border-white\/10 {
+            border-color: rgba(37, 99, 235, 0.18) !important;
+        }
+
+        /* Connection amber badges */
+        body.light-mode .text-amber-400 {
+            color: #b45309 !important;
+        }
+        body.light-mode .bg-amber-500\/10 {
+            background-color: rgba(217, 119, 6, 0.08) !important;
+        }
+        body.light-mode .border-amber-500\/20 {
+            border-color: rgba(217, 119, 6, 0.22) !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Beautiful Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-20 right-4 z-[100] space-y-2 pointer-events-none"></div>
+
+    <!-- Star Canvas Background overlay -->
+    <canvas id="spaceBackground" class="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-40"></canvas>
+
+    <!-- Header Navigation Section -->
+    <header class="sticky top-0 z-50 bg-[#090d16]/75 backdrop-blur-md border-b border-[#58a6ff]/15">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
+            
+            <div class="flex items-center gap-2">
+                <div class="p-2 bg-[#58a6ff]/10 text-[#58a6ff] rounded-lg border border-[#58a6ff]/30">
+                    <i data-lucide="eye" class="w-5 h-5 animate-pulse text-[#58a6ff]"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-tight text-white leading-none uppercase">OmniControl AI</h1>
+                    <span class="text-[9px] font-mono font-bold text-[#58a6ff] tracking-widest uppercase">Proctoring Engine Local Node</span>
+                </div>
+            </div>
+
+            <!-- Theme Toggle & Connection Container -->
+            <div class="flex items-center gap-2">
+                <button onclick="toggleTheme()" class="px-3 py-1.5 bg-[#58a6ff]/10 text-[#58a6ff] border border-[#58a6ff]/20 rounded-lg hover:bg-[#58a6ff]/20 transition flex items-center gap-1.5 text-xs font-semibold select-none" id="themeToggleBtn" title="Toggle Light/Dark Theme">
+                    <i id="themeIcon" data-lucide="sun" class="w-4 h-4"></i>
+                    <span id="themeLabel" class="hidden sm:inline">Light Mode</span>
+                </button>
+                <span id="connectionBadge" class="text-xs font-semibold px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-md border border-amber-500/20 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-ping mr-1"></span>
+                    <span id="connLabel">Ping Backend...</span>
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container Layout -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12 relative z-10">
+        
+        <!-- Header Text -->
+        <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
+            <div>
+                <h1 class="text-xl md:text-3xl font-extrabold text-[#58a6ff] tracking-tight cyber-glow flex items-center min-h-[40px]">
+                    <span id="mainHeadingText"></span><span id="typingCursor" class="inline-block w-[3px] h-[1.1em] bg-[#58a6ff] ml-1.5 cursor-blink"></span>
+                </h1>
+                <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-1">
+                    Next-Gen Real-time Pupil & Head Movement Verification Core
+                </p>
+            </div>
+            
+            <!-- Quick actions -->
+            <div class="flex gap-2">
+                <button onclick="testBeep()" class="px-3 py-1 text-xs glass-panel text-slate-300 rounded hover:bg-slate-800 transition flex items-center gap-1">
+                    <i data-lucide="volume-2" class="w-3.5 h-3.5"></i> Audio Check
+                </button>
+            </div>
+        </div>
+
+        <!-- Metrics Cards Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            
+            <!-- Gaze Status Card -->
+            <div id="statusCard" class="p-4 rounded-xl glass-panel flex flex-col justify-between shadow-md border border-emerald-500/20 transition-all duration-300">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-bold text-slate-400 tracking-wider uppercase">Live Gaze State</span>
+                    <span class="relative flex h-2 w-2">
+                        <span id="statusPing" class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-500"></span>
+                        <span id="statusCircle" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                </div>
+                <div>
+                    <h3 id="statusText" class="text-lg font-bold text-emerald-400 tracking-wide uppercase truncate">
+                        Looking at Screen
+                    </h3>
+                    <p id="statusDesc" class="text-[10px] text-slate-400 mt-1">
+                        Candidate focused on monitor.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Compliance Score Card -->
+            <div class="p-4 rounded-xl glass-panel flex flex-col justify-between shadow-md">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-[10px] font-bold tracking-wider uppercase">Compliance Index</span>
+                    <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="complianceText" class="text-3xl font-extrabold text-white">100.0</span>
+                        <span class="text-xs font-semibold text-slate-400">%</span>
+                    </div>
+                    <div class="w-full bg-slate-950/60 h-1 rounded-full mt-2 overflow-hidden border border-slate-800/40">
+                        <div id="complianceBar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gaze Incidents Count Card -->
+            <div class="p-4 rounded-xl glass-panel flex flex-col justify-between shadow-md">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-[10px] font-bold tracking-wider uppercase">Gaze Incidents</span>
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i>
+                </div>
+                <div>
+                    <h3 id="violationsCount" class="text-3xl font-extrabold text-white">0</h3>
+                    <p id="violationsDesc" class="text-[10px] text-slate-400 mt-1">
+                        Awesome, clean compliance!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Track Session Timer Card -->
+            <div class="p-4 rounded-xl glass-panel flex flex-col justify-between shadow-md">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-[10px] font-bold tracking-wider uppercase">Active Tracking</span>
+                    <i data-lucide="clock" class="w-4 h-4 text-[#58a6ff]"></i>
+                </div>
+                <div>
+                    <h3 id="sessionTimeText" class="text-3xl font-extrabold text-white">00:00:00</h3>
+                    <p id="subtimerText" class="text-[10px] text-slate-400 mt-1">
+                        Focused: 00:00:00
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Working Grid: Left (Camera, Settings), Right (Reports, Logs) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left Panel (Proctoring camera stream) -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- Camera Feed Dashboard -->
+                <div class="glass-panel rounded-xl p-5 shadow-lg relative overflow-hidden">
+                    
+                    <div class="flex justify-between items-center pb-3 mb-4 border-b border-white/5">
+                        <div class="flex items-center gap-1.5 font-bold text-white text-xs">
+                            <i data-lucide="shield" class="w-4 h-4 text-[#58a6ff] animate-pulse"></i>
+                            <span>Active AI Proctoring Feed</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] font-mono text-slate-400">
+                                STATS: <span id="fpsCounter" class="font-bold text-[#58a6ff]">0</span> FPS
+                            </span>
+                            <span class="h-1.5 w-1.5 rounded-full bg-slate-700"></span>
+                            <span class="text-[9px] font-mono text-slate-400">
+                                LOCK: <span id="confCounter" class="font-bold text-emerald-400">0%</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Alternate Stream Mode Selector -->
+                    <div class="mb-3 flex items-center justify-between bg-slate-950/60 p-2 rounded border border-white/5 text-[10px]">
+                        <span class="text-slate-400 font-semibold">Webcam Tracker Location:</span>
+                        <div class="flex gap-1.5">
+                            <button id="modeLocalBtn" onclick="switchStreamMode('local')" class="px-2 py-0.5 font-bold rounded bg-[#58a6ff] text-slate-950 font-sans">
+                                Browser MediaPipe
+                            </button>
+                            <button id="modeServerBtn" onclick="switchStreamMode('server')" class="px-2 py-0.5 font-bold rounded bg-slate-800 text-slate-300 font-sans hover:bg-slate-700">
+                                FastAPI Stream
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Video / Media Enclosure Block -->
+                    <div id="mediaBox" class="relative w-full aspect-video rounded-lg overflow-hidden bg-slate-950 border border-white/5 shadow-inner flex items-center justify-center">
+                        
+                        <!-- MediaPipe Local Processing Frame elements -->
+                        <div id="localProcessingFrame" class="absolute inset-0 w-full h-full flex items-center justify-center">
+                            
+                            <!-- Hidden HTML Video Stream captured by JS -->
+                            <video id="webcamVideo" autoplay playsinline muted class="absolute inset-0 w-full h-full object-cover scale-x-[-1] opacity-70 pointer-events-none transition-opacity duration-200"></video>
+                            
+                            <!-- Calibration drawing layer overlay -->
+                            <canvas id="faceMeshCanvas" class="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none"></canvas>
+                            
+                            <!-- MediaPipe Script state check -->
+                            <div id="scriptLoading" class="text-center p-6 space-y-3 z-20">
+                                <i data-lucide="refresh-cw" class="w-8 h-8 text-[#58a6ff] animate-spin mx-auto"></i>
+                                <p class="text-xs text-slate-300 font-semibold">
+                                    Compiling Gaze Vectors...
+                                </p>
+                            </div>
+
+                            <!-- Offline Prompt -->
+                            <div id="cameraOffline" class="hidden text-center p-6 space-y-4 z-5">
+                                <div class="p-3 bg-[#090d16]/80 rounded-full w-fit mx-auto border border-[#58a6ff]/20">
+                                    <i data-lucide="camera-off" class="w-6 h-6 text-slate-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-200">System is Offline</h4>
+                                    <p class="text-[9px] text-slate-400 max-w-xs mt-1 leading-relaxed">
+                                        Activate browser webcam stream below to run local spatial eye vector mesh calculations.
+                                    </p>
+                                </div>
+                                <button onclick="initializeLocalWebcam()" class="px-4 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-[#1f6feb] to-[#58a6ff] hover:from-[#1553b3] hover:to-[#3e89e0] select-none rounded-full shadow-lg transition-transform hover:scale-105 duration-300 flex items-center gap-1.5 mx-auto">
+                                    <i data-lucide="video" class="w-3.5 h-3.5"></i> Connect Gaze Tracker
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- FastAPI Server stream wrapper (MJPEG element fallback) -->
+                        <div id="serverStreamFrame" class="hidden absolute inset-0 w-full h-full">
+                            <img id="serverVideoElement" class="absolute inset-0 w-full h-full object-cover" src="" alt="Python Stream Feed">
+                            <div id="serverStreamOfflineOverlay" class="absolute inset-0 bg-slate-950/80 flex flex-col items-center justify-center p-4 text-center">
+                                <i data-lucide="video-off" class="w-8 h-8 text-rose-500 mb-2"></i>
+                                <span class="text-xs font-semibold text-slate-300">FastAPI MJPEG Feed Unavailable</span>
+                                <p class="text-[10px] text-slate-500 mt-1 max-w-xs">Double check your Python server running on local port 8000 allows streaming!</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Neural Trajectory Matrix (Real-time Head Orientation) -->
+                    <div class="mt-4 p-3 bg-slate-950/70 rounded-xl border border-[#58a6ff]/10">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-bold text-slate-400 tracking-wider uppercase flex items-center gap-1.5">
+                                <i data-lucide="scan-eye" class="w-3.5 h-3.5 text-[#58a6ff]"></i>
+                                Neural Head Pose Coordinates
+                            </span>
+                            <button id="btnCalibrate" onclick="calibrateCurrentHeadBaseline()" class="px-2 py-0.5 text-[9px] font-bold bg-[#58a6ff]/10 text-[#58a6ff] border border-[#58a6ff]/20 hover:bg-[#58a6ff]/20 rounded transition pointer-events-auto" title="Set current head pose as baseline zero">
+                                Calibrate Baseline
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-center pointer-events-none">
+                            <!-- Yaw -->
+                            <div class="p-2 bg-[#090d16]/80 rounded border border-white/5">
+                                <div class="text-[9px] text-slate-400 font-semibold uppercase">Yaw (Turn)</div>
+                                <div id="headYawVal" class="text-xs font-mono font-bold text-emerald-400 mt-0.5">0.0°</div>
+                                <div class="w-full bg-slate-900 h-1 rounded mt-1 overflow-hidden">
+                                    <div id="headYawBar" class="h-full bg-emerald-500 rounded transition-all" style="width: 50%"></div>
+                                </div>
+                            </div>
+                            <!-- Pitch -->
+                            <div class="p-2 bg-[#090d16]/80 rounded border border-white/5">
+                                <div class="text-[9px] text-slate-400 font-semibold uppercase">Pitch (Tilt)</div>
+                                <div id="headPitchVal" class="text-xs font-mono font-bold text-emerald-400 mt-0.5">0.0°</div>
+                                <div class="w-full bg-slate-900 h-1 rounded mt-1 overflow-hidden">
+                                    <div id="headPitchBar" class="h-full bg-emerald-500 rounded transition-all" style="width: 50%"></div>
+                                </div>
+                            </div>
+                            <!-- Roll -->
+                            <div class="p-2 bg-[#090d16]/80 rounded border border-white/5">
+                                <div class="text-[9px] text-slate-400 font-semibold uppercase">Roll (Tilt)</div>
+                                <div id="headRollVal" class="text-xs font-mono font-bold text-[#58a6ff] mt-0.5">0.0°</div>
+                                <div class="w-full bg-slate-900 h-1 rounded mt-1 overflow-hidden">
+                                    <div id="headRollBar" class="h-full bg-[#58a6ff] rounded transition-all" style="width: 50%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Stream State Controller buttons -->
+                    <div class="flex flex-col sm:flex-row gap-2 mt-4 justify-between items-stretch sm:items-center">
+                        <button id="camDisableBtn" onclick="stopLocalCamera()" class="hidden px-3 py-1.5 text-xs font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg transition-colors flex items-center justify-center gap-1">
+                            <i data-lucide="camera-off" class="w-3.5 h-3.5"></i> Unlink Local stream
+                        </button>
+                        <div id="spacerArea" class="h-8 hidden sm:block"></div>
+
+                        <button id="proctorToggleBtn" onclick="toggleActiveProctoring()" disabled class="px-4 py-1.5 text-xs font-bold rounded-full transition-all duration-300 flex items-center justify-center gap-1 bg-[#1f6feb] text-white disabled:opacity-45">
+                            <i data-lucide="shield" class="w-3.5 h-3.5"></i>
+                            <span id="proctorBtnLabel">Start Active Proctoring</span>
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Admin settings and variables custom configuration -->
+                <div class="glass-panel rounded-xl p-5 shadow-lg">
+                    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-white/5">
+                        <i data-lucide="sliders" class="w-4 h-4 text-[#58a6ff]"></i>
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider">Configure Settings</h2>
+                    </div>
+
+                    <div class="space-y-4">
+                        
+                        <!-- Gaze shifts sensibility -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-[11px] font-semibold text-slate-300 uppercase">Gaze Deviation Sensibility</label>
+                                <span id="sensLbl" class="text-xs font-mono font-bold text-[#58a6ff]">Level 3</span>
+                            </div>
+                            <input id="sensitivityRange" type="range" min="1" max="5" value="3" oninput="updateSettingsFromDOM()" class="w-full accent-[#58a6ff] bg-slate-950 rounded-lg cursor-pointer h-1.5">
+                            <p class="text-[9px] text-slate-500 mt-1">Increasing the level reports minor pupil lookaway deviations quickly.</p>
+                        </div>
+
+                        <!-- Interval threshold in seconds -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-[11px] font-semibold text-slate-300 uppercase">Disqualification Threshold</label>
+                                <span id="intervalLbl" class="text-xs font-mono font-bold text-[#58a6ff]">1.0s</span>
+                            </div>
+                            <input id="intervalRange" type="range" min="0.5" max="4.0" step="0.5" value="1.0" oninput="updateSettingsFromDOM()" class="w-full accent-[#58a6ff] bg-slate-950 rounded-lg cursor-pointer h-1.5">
+                            <p class="text-[9px] text-slate-500 mt-1">Disregards temporary blinks. Minimum continuous seconds to log a violation.</p>
+                        </div>
+
+                        <!-- Head twist/turn limit slider -->
+                        <div class="pt-3 border-t border-white/5">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-[11px] font-semibold text-slate-300 uppercase">Head Turn Limit (Yaw)</label>
+                                <span id="yawLbl" class="text-xs font-mono font-bold text-[#58a6ff]">25°</span>
+                            </div>
+                            <input id="yawRange" type="range" min="15" max="45" step="5" value="25" oninput="updateSettingsFromDOM()" class="w-full accent-[#58a6ff] bg-slate-950 rounded-lg cursor-pointer h-1.5">
+                            <p class="text-[9px] text-slate-500 mt-1">Triggers distraction alert when head turn exceeds this limit angle left/right.</p>
+                        </div>
+
+                        <!-- Webcam Feed Opacity Slider -->
+                        <div class="pt-3 border-t border-white/5">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-[11px] font-semibold text-slate-300 uppercase">Webcam Feed Opacity</label>
+                                <span id="opacityLbl" class="text-xs font-mono font-bold text-[#58a6ff]">70%</span>
+                            </div>
+                            <input id="opacityRange" type="range" min="0" max="100" step="10" value="70" oninput="updateSettingsFromDOM()" class="w-full accent-[#58a6ff] bg-slate-950 rounded-lg cursor-pointer h-1.5">
+                            <p class="text-[9px] text-slate-500 mt-1">Controls the live webcam preview transparency beneath the vectors.</p>
+                        </div>
+
+                        <!-- Lap-Friendly Smart Gaze-Head Pose filter -->
+                        <div class="pt-3 border-t border-white/5">
+                            <div class="flex items-center justify-between">
+                                <div class="flex flex-col pr-2">
+                                    <span class="text-xs text-slate-200">Lap-Friendly Mode (Corner Guard)</span>
+                                    <span class="text-[9px] text-slate-500">Ignores eye lookaways if head remains strictly centered on screen.</span>
+                                </div>
+                                <input id="chkLapMode" type="checkbox" checked onchange="updateSettingsFromDOM()" class="accent-[#58a6ff] h-4 w-4 rounded cursor-pointer whitespace-nowrap">
+                            </div>
+                        </div>
+
+                        <!-- Sounds & feedback switches -->
+                        <div class="pt-3 border-t border-white/5 space-y-3 font-sans">
+                            <span class="text-[9px] font-bold text-slate-400 block uppercase tracking-wider">Voice Synthesis & Sound alerts</span>
+                            
+                            <div class="flex items-center justify-between">
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-slate-200">Digital Tone Warning Beeps</span>
+                                    <span class="text-[9px] text-slate-500">Beep on focus violations.</span>
+                                </div>
+                                <input id="chkSound" type="checkbox" checked class="accent-[#58a6ff] h-4 w-4 rounded cursor-pointer">
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-slate-200">Vocal Synthesizer Warnings</span>
+                                    <span class="text-[9px] text-slate-500">Speech alert via Web Audio.</span>
+                                </div>
+                                <input id="chkVoice" type="checkbox" checked class="accent-[#58a6ff] h-4 w-4 rounded cursor-pointer">
+                            </div>
+                        </div>
+
+                        <!-- Anti Bias Proctor Guidelines details -->
+                        <div class="p-3 bg-[#090d16]/60 rounded-lg border border-white/5 text-[9px] text-slate-400 space-y-1">
+                            <div class="flex items-center gap-1 font-semibold text-slate-300 mb-1">
+                                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                <span>Local Gaze Audit Rules</span>
+                            </div>
+                            <p>To reduce proctor bias, lookaways are graded continuously relative to individual user spatial limits. Allow thinking/reflecting offsets.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Panel (Incident log registry, AI Report Summary Generator) -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- AI Summarizer Assessment Generator -->
+                <div class="glass-panel rounded-xl p-5 shadow-lg relative">
+                    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-white/5">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-[#58a6ff] animate-pulse"></i>
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider">AI Proctoring Summary Report</h2>
+                    </div>
+
+                    <!-- Meta Data Text fields -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Candidate Name</label>
+                            <input id="candidateNameInput" type="text" value="Faizan" class="w-full px-3 py-1.5 text-xs bg-slate-950 border border-white/5 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#58a6ff]/40 text-white font-medium" placeholder="E.g. Ali Ahmed">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Interview/Role Profile</label>
+                            <input id="roleInput" type="text" value="Full Stack Developer" class="w-full px-3 py-1.5 text-xs bg-slate-950 border border-white/5 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#58a6ff]/40 text-white font-medium" placeholder="E.g. Senior Backend Engineer">
+                        </div>
+                    </div>
+
+                    <!-- Live Tracking Session Status Info -->
+                    <div class="bg-[#090d16]/60 border border-white/5 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        <div class="text-[10px] text-slate-400 leading-normal">
+                            <p class="font-bold text-slate-200 uppercase">Live Session Metadata</p>
+                            <p class="mt-0.5">Focus Grade: <span id="syncFocusIdx" class="font-mono font-semibold text-[#5c98ff]">100%</span> | Incidents: <span id="syncIncidentsCount" class="font-mono font-semibold text-[#5c98ff]">0</span> flagged.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Real-time logs panel -->
+                <div class="glass-panel rounded-xl p-5 shadow-lg relative">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5 pb-4 border-b border-white/5">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
+                                <h2 class="text-sm font-bold text-white uppercase tracking-wider">Distraction Audit Trail</h2>
+                            </div>
+                            <p class="text-[10px] text-slate-400 mt-1">Real-time attention departures and camera events tracker.</p>
+                        </div>
+
+                        <!-- Wipe actions -->
+                        <div class="flex items-center gap-2 w-full sm:w-auto self-end sm:self-center">
+                            <button onclick="clearAuditRegistry()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-400 border border-rose-500/15 bg-rose-500/5 hover:bg-rose-500/15 rounded-lg transition-colors cursor-pointer w-full sm:w-auto justify-center">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear logs
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Log Stream List -->
+                    <div class="max-h-60 overflow-y-auto pr-1 space-y-2" id="logScrollContainer">
+                        <ul id="incidentLogsList" class="space-y-2 m-0 p-0 list-none text-xs">
+                            <li id="emptyLogsPlaceholder" class="text-center py-8 border border-dashed border-white/5 rounded-xl bg-[#090d16]/30">
+                                <p class="text-[10px] text-slate-500 font-mono">Awaiting system activation sequence...</p>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- JS Control Program Scripts -->
+    <script>
+        // Configs & APIs
+        // Adaptive Backend Router:
+        // Use local localhost port 8000 when opened via direct file:// url or loaded on port 8000.
+        // Otherwise, dynamically adapt to the currently served server origin (e.g. platform preview on port 3000)
+        let FASTAPI_ADDRESS = "http://127.0.0.1:8000";
+        if (window.location.protocol !== "file:" && window.location.port !== "8000") {
+            FASTAPI_ADDRESS = window.location.origin;
+        }
+        
+        let localCameraStream = null;
+        let localFaceMesh = null;
+        let isProctoringActive = false;
+        let streamMode = "local"; // 'local' uses MediaPipe in browser, 'server' uses python stream url
+
+        // Gaze & Head tracking parameters & settings
+        let headBaseline = { yaw: 0.0, pitch: 0.0, roll: 0.0 };
+        let currentHeadYaw = 0.0;
+        let currentHeadPitch = 0.0;
+        let currentHeadRoll = 0.0;
+        let lastLandmarksForCalibration = null;
+
+        let settings = {
+            sensitivity: 3,
+            gazeIntervalThreshold: 1.0,
+            headYawThreshold: 25.0
+        };
+
+        // Telemetry counters
+        let currentGazeState = "FOCUS";
+        let violationEvents = [];
+        let totalTrackingSeconds = 0;
+        let totalFocusedSeconds = 0;
+        let sessionTimerInterval = null;
+
+        // Debounce Gaze States
+        let previousGazeState = "FOCUS";
+        let stateLastChangedTime = Date.now();
+        let eyesClosedStartTime = null;
+        let lastClosedEyesAlertTime = 0;
+        let continuousDistractionStartTime = null;
+        let lastSpokenWarningTime = 0;
+
+        // Canvas floating background particles
+        let particles = [];
+        const canvasBg = document.getElementById("spaceBackground");
+        const ctxBg = canvasBg.getContext("2d");
+
+        // Initialization
+        window.addEventListener("DOMContentLoaded", () => {
+            // Apply preserved light mode choice before rendering icons
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "light") {
+                document.body.classList.add("light-mode");
+                const themeIcon = document.getElementById("themeIcon");
+                const themeLabel = document.getElementById("themeLabel");
+                if (themeIcon) themeIcon.setAttribute("data-lucide", "moon");
+                if (themeLabel) themeLabel.textContent = "Dark Mode";
+            }
+
+            lucide.createIcons();
+            initializeSpaceStars();
+            pingFastAPIServer();
+            setInterval(pingFastAPIServer, 4000); // Poll server state continuously
+
+            // Start check loop for MediaPipe loading
+            checkMediaPipeLoading();
+
+            // Start the typewriter heading animation
+            startTypewriterHeading();
+        });
+
+        // Theme toggling (Dark Mode / Light Mode)
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById("themeIcon");
+            const themeLabel = document.getElementById("themeLabel");
+            
+            body.classList.toggle("light-mode");
+            const isLight = body.classList.contains("light-mode");
+            
+            if (isLight) {
+                themeIcon.setAttribute("data-lucide", "moon");
+                themeLabel.textContent = "Dark Mode";
+                localStorage.setItem("theme", "light");
+            } else {
+                themeIcon.setAttribute("data-lucide", "sun");
+                themeLabel.textContent = "Light Mode";
+                localStorage.setItem("theme", "dark");
+            }
+            
+            // Re-render Lucide icons
+            lucide.createIcons();
+        }
+
+        // Typewriter heading animation
+        function startTypewriterHeading() {
+            const hEl = document.getElementById("mainHeadingText");
+            const cursorEl = document.getElementById("typingCursor");
+            const fullText = "OmniControl AI: Spatial Auditor";
+            let idx = 0;
+            hEl.textContent = "";
+            
+            function type() {
+                if (idx < fullText.length) {
+                    hEl.textContent += fullText.charAt(idx);
+                    idx++;
+                    // Realistic typing feel
+                    setTimeout(type, 30 + Math.random() * 40);
+                }
+            }
+            setTimeout(type, 200);
+        }
+
+        // 1. Starry cosmic canvas animation
+        function initializeSpaceStars() {
+            window.addEventListener("resize", resizeCanvas);
+            resizeCanvas();
+
+            function resizeCanvas() {
+                canvasBg.width = window.innerWidth;
+                canvasBg.height = window.innerHeight;
+            }
+
+            for(let i=0; i<60; i++) {
+                particles.push({
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    size: Math.random() * 1.5 + 0.5,
+                    vx: (Math.random() - 0.5) * 0.15,
+                    vy: (Math.random() - 0.5) * 0.15
+                });
+            }
+
+            function drawParticles() {
+                ctxBg.clearRect(0, 0, canvasBg.width, canvasBg.height);
+                
+                const isLight = document.body.classList.contains("light-mode");
+                ctxBg.fillStyle = isLight ? "rgba(37, 99, 235, 0.3)" : "rgba(147, 197, 253, 0.7)";
+                
+                particles.forEach(p => {
+                    ctxBg.beginPath();
+                    ctxBg.arc(p.x, p.y, p.size, 0, 2*Math.PI);
+                    ctxBg.fill();
+
+                    // Advance coordinates
+                     p.x += p.vx;
+                    p.y += p.vy;
+
+                    // Bounds verify
+                    if (p.x < 0 || p.x > canvasBg.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > canvasBg.height) p.vy *= -1;
+                });
+                
+                requestAnimationFrame(drawParticles);
+            }
+            drawParticles();
+        }
+
+        // 2. Poll & check connections with Python FastAPI server
+        function pingFastAPIServer() {
+            const badge = document.getElementById("connectionBadge");
+            const label = document.getElementById("connLabel");
+
+            fetch(FASTAPI_ADDRESS + "/")
+                .then(r => r.json())
+                .then(data => {
+                    badge.className = "text-xs font-semibold px-2.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-md border border-emerald-500/20 flex items-center gap-1";
+                    label.innerText = "Backend: CONNECTED";
+                    
+                    // If mode is server streaming, verify the image feed can display safely
+                    if (streamMode === "server") {
+                        document.getElementById("serverStreamOfflineOverlay").className = "hidden";
+                    }
+                })
+                .catch(err => {
+                    badge.className = "text-xs font-semibold px-2.5 py-1 bg-rose-500/10 text-rose-400 rounded-md border border-rose-500/20 flex items-center gap-1";
+                    label.innerText = "Backend: OFFLINE";
+                    
+                    // If server is offline, show black error inside server feed frame
+                    if (streamMode === "server") {
+                        document.getElementById("serverStreamOfflineOverlay").className = "absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center p-4 text-center";
+                    }
+                });
+        }
+
+        // 3. Switch stream tracking types (Client vs Server)
+        function switchStreamMode(mode) {
+            streamMode = mode;
+            const localDiv = document.getElementById("localProcessingFrame");
+            const serverDiv = document.getElementById("serverStreamFrame");
+            const modeLocal = document.getElementById("modeLocalBtn");
+            const modeServer = document.getElementById("modeServerBtn");
+
+            // Stop local stream if toggled to server
+            if (mode === "server") {
+                stopLocalCamera();
+                localDiv.className = "hidden";
+                serverDiv.className = "absolute inset-0 w-full h-full";
+                modeServer.className = "px-2 py-0.5 font-bold rounded bg-[#58a6ff] text-slate-950 font-sans";
+                modeLocal.className = "px-2 py-0.5 font-bold rounded bg-slate-800 text-slate-300 font-sans hover:bg-slate-700";
+                
+                // Mount FastAPI MJPEG stream inside <img> tag!
+                document.getElementById("serverVideoElement").src = `${FASTAPI_ADDRESS}/video_feed?t=${Date.now()}`;
+                
+                // Server stream can also run session counters
+                document.getElementById("proctorToggleBtn").disabled = false;
+            } else {
+                // Return to local MediaPipe model
+                document.getElementById("serverVideoElement").src = "";
+                serverDiv.className = "hidden";
+                localDiv.className = "absolute inset-0 w-full h-full flex items-center justify-center";
+                modeLocal.className = "px-2 py-0.5 font-bold rounded bg-[#58a6ff] text-slate-950 font-sans";
+                modeServer.className = "px-2 py-0.5 font-bold rounded bg-slate-800 text-slate-300 font-sans hover:bg-slate-700";
+                
+                document.getElementById("proctorToggleBtn").disabled = (localCameraStream === null);
+            }
+        }
+
+        // 4. Client Side MediaPipe verification
+        function checkMediaPipeLoading() {
+            let timer = setInterval(() => {
+                if (window.FaceMesh) {
+                    clearInterval(timer);
+                    document.getElementById("scriptLoading").className = "hidden";
+                    document.getElementById("cameraOffline").className = "text-center p-6 space-y-4 z-5";
+                    initializeMediaPipeModel();
+                }
+            }, 300);
+        }
+
+        function initializeMediaPipeModel() {
+            try {
+                localFaceMesh = new FaceMesh({
+                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+                });
+
+                localFaceMesh.setOptions({
+                    maxNumFaces: 1,
+                    refineLandmarks: true, // Enables high-fidelity iris landmarks tracking!
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
+                });
+
+                localFaceMesh.onResults(onGazeMeshResults);
+            } catch (err) {
+                console.error("Failed to load local MediaPipe mesh object", err);
+            }
+        }
+
+        // Web camera toggle hooks for browser-based gaze tracking
+        function initializeLocalWebcam() {
+            const videoEl = document.getElementById("webcamVideo");
+            const offlineLabel = document.getElementById("cameraOffline");
+            
+            navigator.mediaDevices.getUserMedia({
+                video: { width: 640, height: 480, frameRate: { ideal: 30 } },
+                audio: false
+            })
+            .then(stream => {
+                localCameraStream = stream;
+                videoEl.srcObject = stream;
+                videoEl.onloadedmetadata = () => {
+                    videoEl.play();
+                    offlineLabel.className = "hidden";
+                    document.getElementById("camDisableBtn").className = "px-3 py-1.5 text-xs font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg transition-colors flex items-center justify-center gap-1";
+                    document.getElementById("proctorToggleBtn").disabled = false;
+                    
+                    // Trigger asynchronous loop reading video frames and passing them to MediaPipe FaceMesh
+                    startBrowserStreamLoop();
+                };
+            })
+            .catch(err => {
+                alert("Camera Access Blocked in browser. Check authorizations permissions in your browser bar!");
+                console.error(err);
+            });
+        }
+
+        // Stop local stream helper
+        function stopLocalCamera() {
+            // Cancel audio and camera trackers
+            if (localCameraStream) {
+                localCameraStream.getTracks().forEach(track => track.stop());
+                localCameraStream = null;
+            }
+            
+            const videoEl = document.getElementById("webcamVideo");
+            videoEl.srcObject = null;
+            
+            document.getElementById("camDisableBtn").className = "hidden";
+            document.getElementById("cameraOffline").className = "text-center p-6 space-y-4 z-5";
+            document.getElementById("proctorToggleBtn").disabled = (streamMode === "local");
+
+            if (isProctoringActive) {
+                toggleActiveProctoring();
+            }
+
+            // Clean mesh overlay
+            const canvas = document.getElementById("faceMeshCanvas");
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Continuous streaming capture loop
+        let isLoopRunning = false;
+        function startBrowserStreamLoop() {
+            if (isLoopRunning) return;
+            isLoopRunning = true;
+
+            const video = document.getElementById("webcamVideo");
+            let lastTime = Date.now();
+
+            async function processFrame() {
+                if (!localCameraStream) {
+                    isLoopRunning = false;
+                    return;
+                }
+
+                if (video.readyState === video.HAVE_ENOUGH_DATA && localFaceMesh) {
+                    try {
+                        await localFaceMesh.send({ image: video });
+                    } catch(e) {
+                        console.warn("MediaPipe dropped frame inside loop:", e);
+                    }
+                }
+
+                // FPS Counter calculations
+                let now = Date.now();
+                let fps = Math.round(1000 / (now - lastTime));
+                lastTime = now;
+                document.getElementById("fpsCounter").innerText = fps;
+
+                requestAnimationFrame(processFrame);
+            }
+            requestAnimationFrame(processFrame);
+        }
+
+        // 5. Core Gaze and Head Pose Tracking analysis (Runs inside browser at 30 FPS!)
+        function onGazeMeshResults(results) {
+            const canvas = document.getElementById("faceMeshCanvas");
+            const video = document.getElementById("webcamVideo");
+            const ctx = canvas.getContext("2d");
+
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Mirror viewport bounds to match user perspective
+            ctx.scale(-1, 1);
+            ctx.translate(-canvas.width, 0);
+
+            const landmarks = results.multiFaceLandmarks?.[0];
+
+            if (!landmarks) {
+                // NO FACE DETECTED
+                document.getElementById("confCounter").innerText = "0%";
+                updateGazeEvaluation("FACE_NOT_DETECTED");
+                drawProctorOverlayHUD(ctx, canvas, "FACE_NOT_DETECTED", null);
+                lastLandmarksForCalibration = null;
+                return;
+            }
+
+            document.getElementById("confCounter").innerText = "99%";
+            lastLandmarksForCalibration = landmarks;
+
+            // Calculate Head Pose Angles in real-time
+            const rawAngles = getRawHeadAngles(landmarks);
+            const relativeYaw = rawAngles.yaw - headBaseline.yaw;
+            const relativePitch = rawAngles.pitch - headBaseline.pitch;
+            const relativeRoll = rawAngles.roll - headBaseline.roll;
+
+            currentHeadYaw = relativeYaw;
+            currentHeadPitch = relativePitch;
+            currentHeadRoll = relativeRoll;
+
+            // Update real-time coordinates panel in UI
+            document.getElementById("headYawVal").innerText = `${relativeYaw > 0 ? '+' : ''}${relativeYaw.toFixed(1)}°`;
+            document.getElementById("headPitchVal").innerText = `${relativePitch > 0 ? '+' : ''}${relativePitch.toFixed(1)}°`;
+            document.getElementById("headRollVal").innerText = `${relativeRoll > 0 ? '+' : ''}${relativeRoll.toFixed(1)}°`;
+
+            // Adjust coordinate gauges background colors or warning state signals
+            const maxYaw = settings.headYawThreshold || 25.0;
+            const headYawBar = document.getElementById("headYawBar");
+            const yawPercent = Math.max(0, Math.min(100, 50 + (relativeYaw / maxYaw) * 50));
+            headYawBar.style.width = `${yawPercent}%`;
+
+            if (Math.abs(relativeYaw) > maxYaw) {
+                headYawBar.className = "h-full bg-rose-500 rounded transition-all";
+                document.getElementById("headYawVal").className = "text-xs font-mono font-bold text-rose-400 mt-0.5 animate-pulse";
+            } else {
+                headYawBar.className = "h-full bg-emerald-500 rounded transition-all";
+                document.getElementById("headYawVal").className = "text-xs font-mono font-bold text-emerald-400 mt-0.5";
+            }
+
+            const chkLapEl = document.getElementById("chkLapMode");
+            const isLapModeActive = chkLapEl ? chkLapEl.checked : true;
+
+            const pitchUpLimit = 20.0;
+            const pitchDownLimit = isLapModeActive ? 42.0 : 20.0; // Extend allowed neck downward tilt up to 42 degrees in lap mode
+            const maxPitchVisual = isLapModeActive ? 45.0 : 20.0;
+            const headPitchBar = document.getElementById("headPitchBar");
+            const pitchPercent = Math.max(0, Math.min(100, 50 + (relativePitch / maxPitchVisual) * 50));
+            headPitchBar.style.width = `${pitchPercent}%`;
+
+            const isPitchViolated = (relativePitch < -pitchUpLimit) || (relativePitch > pitchDownLimit);
+
+            if (isPitchViolated) {
+                headPitchBar.className = "h-full bg-rose-500 rounded transition-all";
+                document.getElementById("headPitchVal").className = "text-xs font-mono font-bold text-rose-400 mt-0.5 animate-pulse";
+            } else {
+                headPitchBar.className = "h-full bg-emerald-500 rounded transition-all";
+                document.getElementById("headPitchVal").className = "text-xs font-mono font-bold text-emerald-400 mt-0.5";
+            }
+
+            const maxRoll = 15.0;
+            const headRollBar = document.getElementById("headRollBar");
+            const rollPercent = Math.max(0, Math.min(100, 50 + (relativeRoll / maxRoll) * 50));
+            headRollBar.style.width = `${rollPercent}%`;
+
+            if (Math.abs(relativeRoll) > maxRoll) {
+                headRollBar.className = "h-full bg-rose-500 rounded transition-all";
+                document.getElementById("headRollVal").className = "text-xs font-mono font-bold text-[#f85149] mt-0.5 animate-pulse";
+            } else {
+                headRollBar.className = "h-full bg-[#58a6ff] rounded transition-all";
+                document.getElementById("headRollVal").className = "text-xs font-mono font-bold text-[#58a6ff] mt-0.5";
+            }
+
+            // MATH calculation of pupils and facial center axis
+            const gazeResult = calculateGazeStatus(landmarks);
+            const gazeStatus = gazeResult.status;
+            const averageScore = gazeResult.averageScore;
+            const avgVertScore = gazeResult.avgVertScore;
+            let combinedStatus = gazeStatus;
+
+            if (isLapModeActive) {
+                // If the head is generally pointing forward at the screen (relativeYaw inside +/- thresholds and pitch inside down limits)
+                // then any temporary eyes-only lookaway (including downward gaze) is treated as focused!
+                const headFacingScreen = Math.abs(relativeYaw) <= (settings.headYawThreshold || 25.0) && relativePitch >= -pitchUpLimit && relativePitch <= pitchDownLimit;
+                
+                if (headFacingScreen) {
+                    if (combinedStatus === "LOOK_LEFT" || combinedStatus === "LOOK_RIGHT" || combinedStatus === "LOOK_UP" || combinedStatus === "LOOK_DOWN") {
+                        combinedStatus = "FOCUS"; // Filter and bypass minor eye glances entirely when laptop is on lap
+                    }
+                }
+            }
+
+            // Head pose checks override client eye FOCUS if head turn exceed limit
+            if (combinedStatus === "FOCUS") {
+                if (relativeYaw < -maxYaw) {
+                    combinedStatus = "HEAD_TURN_LEFT";
+                } else if (relativeYaw > maxYaw) {
+                    combinedStatus = "HEAD_TURN_RIGHT";
+                } else if (relativePitch < -pitchUpLimit) {
+                    combinedStatus = "HEAD_LOOK_UP";
+                } else if (relativePitch > pitchDownLimit) {
+                    combinedStatus = "HEAD_LOOK_DOWN";
+                }
+            }
+
+            updateGazeEvaluation(combinedStatus);
+
+            // Draw eye contours, full face mesh silhouettes, and UI overlays
+            drawVectorEyeSilhouettes(ctx, landmarks, combinedStatus);
+            drawVectorFaceSilhouettes(ctx, landmarks, combinedStatus);
+            drawProctorOverlayHUD(ctx, canvas, combinedStatus, landmarks);
+        }
+
+        // Compute Head Orientation Yaw, Pitch, Roll angles
+        function getRawHeadAngles(landmarks) {
+            const noseTip = landmarks[1];
+            const leftEyeOuter = landmarks[33];
+            const rightEyeOuter = landmarks[263];
+            const forehead = landmarks[10];
+            const chin = landmarks[152];
+
+            if (!noseTip || !leftEyeOuter || !rightEyeOuter || !forehead || !chin) {
+                return { yaw: 0, pitch: 0, roll: 0 };
+            }
+
+            // Horizontal turn (Yaw)
+            const leftDist = Math.abs(noseTip.x - leftEyeOuter.x);
+            const rightDist = Math.abs(noseTip.x - rightEyeOuter.x);
+            const totalWidth = leftDist + rightDist;
+            const yawAsymmetry = (leftDist - rightDist) / (totalWidth || 1);
+            const yaw = yawAsymmetry * 125.0; // Estimate yaw in degrees
+
+            // Vertical turn (Pitch)
+            const verticalRatio = (noseTip.y - forehead.y) / ((chin.y - forehead.y) || 1);
+            const pitch = (verticalRatio - 0.355) * 165.0; // Estimate pitch in degrees
+
+            // Lateral tilt (Roll)
+            const rollSlope = (rightEyeOuter.y - leftEyeOuter.y) / ((rightEyeOuter.x - leftEyeOuter.x) || 1);
+            const roll = Math.atan(rollSlope) * (180 / Math.PI); // Estimate roll in degrees
+
+            return { yaw, pitch, roll };
+        }
+
+        // Set baseline calibrated values for comfortable gaze
+        function calibrateCurrentHeadBaseline() {
+            if (!lastLandmarksForCalibration) {
+                showNotification("Please connect your camera and stay in focus to calibrate!", "warning");
+                return;
+            }
+            const raw = getRawHeadAngles(lastLandmarksForCalibration);
+            headBaseline.yaw = raw.yaw;
+            headBaseline.pitch = raw.pitch;
+            headBaseline.roll = raw.roll;
+
+            showNotification("Spatial baseline posture calibrated to 0,0,0!", "success");
+        }
+
+        // Draw beautiful cybernetic face mesh contours directly mapped on the face & head
+        function drawVectorFaceSilhouettes(ctx, landmarks, status) {
+            if (!landmarks) return;
+
+            // MediaPipe Landmark Index Groups for Face Silhouetting
+            const faceOvalIdxs = [
+                10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378,
+                400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21,
+                54, 103, 67, 109
+            ];
+            const leftEyebrowIdxs = [70, 63, 105, 66, 107];
+            const rightEyebrowIdxs = [300, 293, 334, 296, 336];
+            const noseBridgeIdxs = [168, 6, 197, 195, 5, 4, 1, 19];
+            const outerLipIdxs = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 84, 181, 91, 146];
+
+            let strokeColor = "rgba(248, 81, 73, 0.55)"; // Warning Red
+            let eyebrowStrokeColor = "rgba(248, 81, 73, 0.4)";
+            let noseStrokeColor = "rgba(248, 81, 73, 0.45)";
+            let lipStrokeColor = "rgba(248, 81, 73, 0.4)";
+            let fillForeheadColor = "rgba(248, 81, 73, 0.9)";
+
+            if (status === "FOCUS") {
+                if (isProctoringActive) {
+                    strokeColor = "rgba(34, 197, 94, 0.65)"; // Emerald Green
+                    eyebrowStrokeColor = "rgba(34, 197, 94, 0.45)";
+                    noseStrokeColor = "rgba(34, 197, 94, 0.5)";
+                    lipStrokeColor = "rgba(34, 197, 94, 0.45)";
+                    fillForeheadColor = "rgba(34, 197, 94, 0.9)";
+                } else {
+                    strokeColor = "rgba(88, 166, 255, 0.6)"; // Cyber Blue
+                    eyebrowStrokeColor = "rgba(88, 166, 255, 0.4)";
+                    noseStrokeColor = "rgba(88, 166, 255, 0.45)";
+                    lipStrokeColor = "rgba(88, 166, 255, 0.4)";
+                    fillForeheadColor = "rgba(88, 166, 255, 0.9)";
+                }
+            }
+            
+            // Helper function to draw continuous lines
+            function drawPath(indices, isClosed = false) {
+                ctx.beginPath();
+                indices.forEach((idx, i) => {
+                    const pt = landmarks[idx];
+                    if (pt) {
+                        const x = pt.x * ctx.canvas.width;
+                        const y = pt.y * ctx.canvas.height;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                });
+                if (isClosed) ctx.closePath();
+                ctx.stroke();
+            }
+
+            // Set styles and draw elements
+            ctx.lineWidth = 1.2;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+
+            // 1. Draw outer face oval contour
+            ctx.strokeStyle = strokeColor;
+            drawPath(faceOvalIdxs, true);
+
+            // 2. Draw eyebrows (slightly thinner/faded styling)
+            ctx.strokeStyle = eyebrowStrokeColor;
+            ctx.lineWidth = 1.0;
+            drawPath(leftEyebrowIdxs, false);
+            drawPath(rightEyebrowIdxs, false);
+
+            // 3. Draw Nose Bridge
+            ctx.strokeStyle = noseStrokeColor;
+            ctx.lineWidth = 1.2;
+            drawPath(noseBridgeIdxs, false);
+
+            // 4. Draw Outer Lip Loop
+            ctx.strokeStyle = lipStrokeColor;
+            ctx.lineWidth = 1.0;
+            drawPath(outerLipIdxs, true);
+
+            // 5. High-tech forehead/center posture dot indicator
+            const forehead = landmarks[10];
+            if (forehead) {
+                const fhX = forehead.x * ctx.canvas.width;
+                const fhY = forehead.y * ctx.canvas.height;
+                ctx.beginPath();
+                ctx.arc(fhX, fhY, 3, 0, 2 * Math.PI);
+                ctx.fillStyle = fillForeheadColor;
+                ctx.fill();
+            }
+        }
+
+        function calculateGazeStatus(landmarks) {
+            // Find key coordinate reference vertices matching standard MediaPipe topology indices
+            // Iris Left Center: 468, Eye Left Inner: 133, Eye Left Outer: 33
+            const irisL = landmarks[468];
+            const leftOuter = landmarks[33];
+            const leftInner = landmarks[133];
+
+            // Iris Right Center: 473, Eye Right Inner: 362, Eye Right Outer: 263
+            const irisR = landmarks[473];
+            const rightInner = landmarks[362];
+            const rightOuter = landmarks[263];
+
+            const defaultRes = { status: "FOCUS", averageScore: 0.5, avgVertScore: 0.5 };
+
+            if (!irisL || !irisR || !leftOuter || !leftInner || !rightInner || !rightOuter) {
+                return defaultRes;
+            }
+
+            // Normal eye limits ratio metrics
+            const leftTotalWidth = leftInner.x - leftOuter.x;
+            const leftPupilX = irisL.x - leftOuter.x;
+            const leftScore = leftPupilX / (leftTotalWidth || 1);
+
+            const rightTotalWidth = rightOuter.x - rightInner.x;
+            const rightPupilX = irisR.x - rightInner.x;
+            const rightScore = rightPupilX / (rightTotalWidth || 1);
+
+            const averageScore = (leftScore + rightScore) / 2;
+
+            // Sensitivity configuration variables adaptation mapping
+            // settings.sensitivity ranges 1-5
+            const limitRightLower = 0.42 - (settings.sensitivity * 0.015);
+            const limitLeftUpper = 0.58 + (settings.sensitivity * 0.015);
+
+            // Assess Blinking via Eye Aspect Ratio indices (closed eyes)
+            const p2 = landmarks[159]; // Left eyelid top
+            const p6 = landmarks[145]; // Left eyelid bottom
+            const eyelidDiff = Math.abs(p2.y - p6.y);
+
+            if (eyelidDiff < 0.012) {
+                return { status: "EYES_CLOSED", averageScore, avgVertScore: 0.5 };
+            }
+
+            // Assess vertical lookups
+            const noseTip = landmarks[1];
+            const forehead = landmarks[10];
+            const chin = landmarks[152];
+            const verticalRatio = (noseTip.y - forehead.y) / ((chin.y - forehead.y) || 1);
+
+            // True eye vertical position
+            const leftTopEyelid = landmarks[159];
+            const leftBottomEyelid = landmarks[145];
+            const rightTopEyelid = landmarks[386];
+            const rightBottomEyelid = landmarks[374];
+
+            let avgVertScore = 0.5;
+            if (leftTopEyelid && leftBottomEyelid && rightTopEyelid && rightBottomEyelid) {
+                const leftVertHeight = leftBottomEyelid.y - leftTopEyelid.y;
+                const rightVertHeight = rightBottomEyelid.y - rightTopEyelid.y;
+                if (leftVertHeight > 0.002 && rightVertHeight > 0.002) {
+                    const leftVertScore = (irisL.y - leftTopEyelid.y) / leftVertHeight;
+                    const rightVertScore = (irisR.y - rightTopEyelid.y) / rightVertHeight;
+                    avgVertScore = (leftVertScore + rightVertScore) / 2;
+                }
+            }
+
+            // Head Pitch Limits
+            const isHeadPitchUp = verticalRatio < 0.30;
+            const isHeadPitchDown = verticalRatio > 0.40;
+
+            // Eye vertical limits (sensitivity maps to limits)
+            const limitUp = 0.28 + (settings.sensitivity * 0.01);  // e.g. 0.31 for level 3
+            const limitDown = 0.64 - (settings.sensitivity * 0.01); // e.g. 0.61 for level 3
+
+            const isEyeVertUp = avgVertScore < limitUp;
+            const isEyeVertDown = avgVertScore > limitDown;
+
+            // Look sideways deviations
+            if (averageScore < limitRightLower) {
+                return { status: "LOOK_LEFT", averageScore, avgVertScore };
+            } else if (averageScore > limitLeftUpper) {
+                return { status: "LOOK_RIGHT", averageScore, avgVertScore };
+            }
+
+            if (isEyeVertDown || isHeadPitchDown) {
+                return { status: "LOOK_DOWN", averageScore, avgVertScore };
+            } else if (isEyeVertUp || isHeadPitchUp) {
+                return { status: "LOOK_UP", averageScore, avgVertScore };
+            }
+
+            return { status: "FOCUS", averageScore, avgVertScore };
+        }
+
+        // Drawing overlays and eye outlines on camera layer
+        function drawVectorEyeSilhouettes(ctx, landmarks, status) {
+            const leftIdxs = [33, 160, 158, 133, 153, 144];
+            const rightIdxs = [362, 385, 387, 263, 373, 380];
+
+            ctx.lineWidth = 2.0;
+            ctx.strokeStyle = (status === "FOCUS") ? "#10b981" : "#fbbf24";
+
+            // Draw left eye circle shape
+            ctx.beginPath();
+            leftIdxs.forEach((idx, i) => {
+                const pt = landmarks[idx];
+                const x = pt.x * ctx.canvas.width;
+                const y = pt.y * ctx.canvas.height;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.stroke();
+
+            // Draw right eye circle shape
+            ctx.beginPath();
+            rightIdxs.forEach((idx, i) => {
+                const pt = landmarks[idx];
+                const x = pt.x * ctx.canvas.width;
+                const y = pt.y * ctx.canvas.height;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.stroke();
+
+            // Iris centers
+            const irisL = landmarks[468];
+            const irisR = landmarks[473];
+
+            if (irisL && irisR) {
+                ctx.fillStyle = (status === "FOCUS") ? "#10b981" : "#f85149";
+                
+                ctx.beginPath();
+                ctx.arc(irisL.x * ctx.canvas.width, irisL.y * ctx.canvas.height, 4, 0, 2*Math.PI);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(irisR.x * ctx.canvas.width, irisR.y * ctx.canvas.height, 4, 0, 2*Math.PI);
+                ctx.fill();
+            }
+        }
+
+        function drawProctorOverlayHUD(ctx, canvas, status, landmarks) {
+            ctx.scale(-1, 1);
+            ctx.translate(-canvas.width, 0);
+
+            // Dark semi-transparent indicator overlay box
+            ctx.fillStyle = "rgba(10, 15, 30, 0.75)";
+            ctx.fillRect(15, 15, 170, 50);
+            ctx.strokeStyle = "rgba(88, 166, 255, 0.15)";
+            ctx.lineWidth = 1;
+            ctx.strokeRect(15, 15, 170, 50);
+
+            ctx.fillStyle = "#cbd5e1";
+            ctx.font = "bold 9px monospace";
+            ctx.fillText("HUD EYE VECTOR SYSTEM", 25, 30);
+
+            ctx.font = "bold 11px sans-serif";
+            if (status === "FOCUS") {
+                ctx.fillStyle = "#34d399";
+                ctx.fillText("● SCREEN FOCUSED", 25, 50);
+            } else if (status === "FACE_NOT_DETECTED") {
+                ctx.fillStyle = "#f85149";
+                ctx.fillText("● CAMERA VACANT", 25, 50);
+            } else {
+                ctx.fillStyle = "#facc15";
+                ctx.fillText("● DEVIATION FLAGGED", 25, 50);
+            }
+
+            // Draw standard crosshairs if face is synced
+            if (landmarks) {
+                ctx.strokeStyle = "rgba(88, 166, 255, 0.08)";
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2, 0);
+                ctx.lineTo(canvas.width / 2, canvas.height);
+                ctx.moveTo(0, canvas.height / 2);
+                ctx.lineTo(canvas.width, canvas.height / 2);
+                ctx.stroke();
+            }
+        }
+
+        // 6. Gaze violations logging and state machine syncing
+        function updateGazeEvaluation(gazeState) {
+            currentGazeState = gazeState;
+
+            // Render live state indicators in the metrics cards
+            const labelEl = document.getElementById("statusText");
+            const descEl = document.getElementById("statusDesc");
+            const cardEl = document.getElementById("statusCard");
+            const pingEl = document.getElementById("statusPing");
+            const circleEl = document.getElementById("statusCircle");
+
+            if (gazeState === "FOCUS") {
+                labelEl.innerText = "Looking at Screen";
+                descEl.innerText = "Candidate focused on monitor.";
+                labelEl.className = "text-lg font-bold text-emerald-400 tracking-wide uppercase truncate";
+                cardEl.className = "p-4 rounded-xl glass-panel flex flex-col justify-between shadow-md border-glow-success border-emerald-500/20";
+                pingEl.className = "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-500";
+                circleEl.className = "relative inline-flex rounded-full h-2 w-2 bg-emerald-500";
+            } else if (gazeState === "FACE_NOT_DETECTED") {
+                labelEl.innerText = "No Face Detected!";
+                descEl.innerText = "Inattention alert: Camera vacant.";
+                labelEl.className = "text-lg font-bold text-rose-400 tracking-wide uppercase truncate";
+                cardEl.className = "p-4 rounded-xl glass-panel flex flex-col justify-between shadow-md border-glow-hazard border-rose-500/30 animate-pulse";
+                pingEl.className = "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-rose-500";
+                circleEl.className = "relative inline-flex rounded-full h-2 w-2 bg-rose-800";
+            } else {
+                let niceName = gazeState.replace("LOOK_", "LOOKING ").replace("HEAD_LOOK_", "HEAD TILT ").replace("HEAD_TURN_", "HEAD TURN ").replace("_", " ");
+                labelEl.innerText = niceName;
+                descEl.innerText = "Off-screen deviation detected.";
+                labelEl.className = "text-lg font-bold text-amber-400 tracking-wide uppercase truncate";
+                cardEl.className = "p-4 rounded-xl glass-panel flex flex-col justify-between shadow-md border-glow-hazard border-amber-500/30";
+                pingEl.className = "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-amber-500";
+                circleEl.className = "relative inline-flex rounded-full h-2 w-2 bg-amber-500";
+            }
+
+            // Gaze state debounce tracking state machine
+            if (!isProctoringActive) {
+                previousGazeState = gazeState;
+                eyesClosedStartTime = null;
+                continuousDistractionStartTime = null;
+                return;
+            }
+
+            const now = Date.now();
+
+            // 1. EYES CLOSED 10 seconds duration checker (Rule 1)
+            if (gazeState === "EYES_CLOSED") {
+                if (eyesClosedStartTime === null) {
+                    eyesClosedStartTime = now;
+                } else {
+                    const closedDuration = (now - eyesClosedStartTime) / 1000;
+                    if (closedDuration >= 10.0) {
+                        if (now - lastClosedEyesAlertTime > 4000) {
+                            speakSynthesizerVoiceWarning("Please open your eyes");
+                            showNotification("Eyes closed for over 10 seconds! Please open your eyes.", "warning");
+                            lastClosedEyesAlertTime = now;
+                        }
+                    }
+                }
+            } else {
+                eyesClosedStartTime = null;
+            }
+
+            // 2. Delayed & Throttled Speech Warning evaluation (Rule 3)
+            if (gazeState === "FOCUS") {
+                continuousDistractionStartTime = null;
+            } else {
+                if (continuousDistractionStartTime === null) {
+                    continuousDistractionStartTime = now;
+                }
+            }
+
+            if (continuousDistractionStartTime !== null) {
+                const continuousDuration = (now - continuousDistractionStartTime) / 1000;
+                
+                // Only say the voice alert after 1.5 seconds of clean continuous distraction
+                if (continuousDuration >= 1.5) {
+                    if (now - lastSpokenWarningTime > 5500) {
+                        playDigitalAlarmTone();
+                        if (gazeState === "FACE_NOT_DETECTED") {
+                            speakSynthesizerVoiceWarning("Please remain visible within your camera view frame");
+                        } else if (gazeState === "EYES_CLOSED") {
+                            speakSynthesizerVoiceWarning("Please open your eyes");
+                        } else if (gazeState.startsWith("HEAD_TURN")) {
+                            speakSynthesizerVoiceWarning("Please keep your head facing forward");
+                        } else if (gazeState.startsWith("HEAD_LOOK")) {
+                            speakSynthesizerVoiceWarning("Please keep your head centered");
+                        } else {
+                            speakSynthesizerVoiceWarning("Please stay focused on your exam screen");
+                        }
+                        lastSpokenWarningTime = now;
+                    }
+                }
+            }
+
+            // 3. State change history registration
+            if (gazeState !== previousGazeState) {
+                const durationSeconds = (now - stateLastChangedTime) / 1000;
+
+                // Log a violation if client was distracted beyond continuous seconds limit threshold
+                if (previousGazeState !== "FOCUS" && durationSeconds >= settings.gazeIntervalThreshold) {
+                    recordGazeDistraction(previousGazeState, stateLastChangedTime, durationSeconds);
+                }
+
+                previousGazeState = gazeState;
+                stateLastChangedTime = now;
+            } else {
+                // If they continue to look away, trigger a repeating audio cue alert every 4 seconds
+                const continuousDuration = (now - stateLastChangedTime) / 1000;
+                if (gazeState !== "FOCUS" && Math.floor(continuousDuration) % 4 === 0 && continuousDuration > settings.gazeIntervalThreshold) {
+                    const tickAlertKey = `sound_tick_${Math.floor(continuousDuration)}`;
+                    if (!window[tickAlertKey]) {
+                        window[tickAlertKey] = true;
+                        playDigitalAlarmTone(gazeState === "FACE_NOT_DETECTED" ? 440 : 540, 0.12);
+                    }
+                }
+            }
+        }
+
+        // Log record processor
+        function recordGazeDistraction(status, startTime, duration) {
+            const entryId = Math.random().toString(36).substr(2, 9);
+            const notes = getNotesDesc(status);
+
+            const newEvent = {
+                id: entryId,
+                startTime: startTime,
+                duration: duration,
+                status: status,
+                notes: notes
+            };
+
+            violationEvents.unshift(newEvent); // Prepended
+            renderAuditLogItems();
+
+            // 7. Dynamic API syncing and transfer logic directly with local Python FastAPI server
+            fetch(`${FASTAPI_ADDRESS}/api/sync-log-entry`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newEvent)
+            })
+            .then(r => r.json())
+            .then(res => {
+                console.log("Telemetry logs saved to backend successfully!", res);
+            })
+            .catch(err => {
+                console.warn("Backend Sync failed. Ensure FastAPI is running on port 8000 (or platform server is active). Data remains in browser memory.", err);
+            });
+        }
+
+        function getNotesDesc(status) {
+            switch(status) {
+                case "FACE_NOT_DETECTED": return "Candidate departed camera field of view or face blocked.";
+                case "LOOK_LEFT": return "Pupil gaze shifted sideways to the left of the monitor.";
+                case "LOOK_RIGHT": return "Pupil gaze shifted sideways to the right of the monitor.";
+                case "LOOK_UP": return "Candidate checked upwards away from exam screen.";
+                case "LOOK_DOWN": return "Candidate checked downwards away from monitor.";
+                case "EYES_CLOSED": return "Candidate closed eyes or blinked continuously.";
+                case "HEAD_TURN_LEFT": return "Head turned significantly leftward away from baseline.";
+                case "HEAD_TURN_RIGHT": return "Head turned significantly rightward away from baseline.";
+                case "HEAD_LOOK_UP": return "Head tilted upward away from monitor.";
+                case "HEAD_LOOK_DOWN": return "Head tilted downward away from monitor.";
+                default: return "Gaze and posture departed center focus bounds.";
+            }
+        }
+
+        // Render logs list inside DOM
+        function renderAuditLogItems() {
+            const list = document.getElementById("incidentLogsList");
+            const countLabel = document.getElementById("violationsCount");
+            const countDesc = document.getElementById("violationsDesc");
+
+            // Update counter cards in UI
+            countLabel.innerText = violationEvents.length;
+            countDesc.innerText = (violationEvents.length === 0) 
+                ? "Awesome, clean compliance!" 
+                : (violationEvents.length > 3) 
+                ? "Immediate review flagged." 
+                : "Minor inattention incidents.";
+
+            if (violationEvents.length > 3) {
+                countLabel.className = "text-3xl font-extrabold text-[#f85149]";
+            } else {
+                countLabel.className = "text-3xl font-extrabold text-white";
+            }
+
+            // Sync indicators for Gemini reporting
+            document.getElementById("syncIncidentsCount").innerText = violationEvents.length;
+
+            if (violationEvents.length === 0) {
+                list.innerHTML = `
+                    <li id="emptyLogsPlaceholder" class="text-center py-8 border border-dashed border-white/5 rounded-xl bg-[#090d16]/30">
+                        <p class="text-[10px] text-slate-500 font-mono">Awaiting system activation sequence...</p>
+                    </li>
+                `;
+                return;
+            }
+
+            let htmlString = "";
+            violationEvents.forEach((ev, index) => {
+                const date = new Date(ev.startTime);
+                const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                
+                htmlString += `
+                    <li class="bg-[#161b22]/70 backdrop-blur-md p-3 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center border border-white/5 gap-2 transition duration-300" style="border-left: 3px solid #f85149;">
+                        <div class="flex flex-col gap-0.5">
+                            <span class="font-mono text-[11px] text-rose-300 font-bold tracking-tight">
+                                [${timeStr}] - Gaze ${ev.status === "FACE_NOT_DETECTED" ? "ABSENT / VACANT" : ev.status} for ${ev.duration.toFixed(1)}s
+                            </span>
+                            <p class="text-[10px] text-slate-400 italic m-0">
+                                ${ev.notes}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-1.5 self-end sm:self-center">
+                            <span class="text-[9px] font-mono text-slate-500 bg-slate-950 px-1.5 py-0.5 rounded border border-white/5">
+                                INDEX #${violationEvents.length - index}
+                            </span>
+                            <span class="text-[8px] uppercase tracking-wider font-mono font-bold px-1.5 py-0.5 bg-[#f85149]/10 text-[#f85149] rounded border border-[#f85149]/20">
+                                FLAGGED
+                            </span>
+                        </div>
+                    </li>
+                `;
+            });
+            list.innerHTML = htmlString;
+        }
+
+        // Active Proctoring session timer metrics
+        function toggleActiveProctoring() {
+            const btnLabel = document.getElementById("proctorBtnLabel");
+            const btnIcon = document.querySelector("#proctorToggleBtn i");
+            const btn = document.getElementById("proctorToggleBtn");
+
+            if (isProctoringActive) {
+                // Stop active proctoring
+                isProctoringActive = false;
+                clearInterval(sessionTimerInterval);
+                sessionTimerInterval = null;
+
+                btn.className = "px-4 py-1.5 text-xs font-bold rounded-full transition-all duration-300 flex items-center justify-center gap-1 bg-[#1f6feb] text-white";
+                btnLabel.innerText = "Start Active Proctoring";
+                
+                // Final log saves if they were looking away is validated when stopping
+                const now = Date.now();
+                if (previousGazeState !== "FOCUS" && (now - stateLastChangedTime)/1000 >= settings.gazeIntervalThreshold) {
+                    recordGazeDistraction(previousGazeState, stateLastChangedTime, (now - stateLastChangedTime)/1000);
+                }
+            } else {
+                // Start active proctoring
+                isProctoringActive = true;
+                stateLastChangedTime = Date.now();
+                
+                btn.className = "px-4 py-1.5 text-xs font-bold rounded-full transition-all duration-300 flex items-center justify-center gap-1 bg-[#f85149] text-white border-glow-hazard";
+                btnLabel.innerText = "Running Tracker...";
+
+                sessionTimerInterval = setInterval(() => {
+                    totalTrackingSeconds++;
+                    if (currentGazeState === "FOCUS") {
+                        totalFocusedSeconds++;
+                    }
+                    
+                    // Render session timer strings
+                    document.getElementById("sessionTimeText").innerText = formatSecondsToString(totalTrackingSeconds);
+                    document.getElementById("subtimerText").innerText = `Focused: ${formatSecondsToString(totalFocusedSeconds)}`;
+
+                    // Calculate focus index percentage
+                    const compliance = (totalTrackingSeconds > 0) ? (totalFocusedSeconds / totalTrackingSeconds) * 100 : 100.0;
+                    document.getElementById("complianceText").innerText = compliance.toFixed(1);
+                    document.getElementById("complianceBar").style.width = `${compliance}%`;
+                    document.getElementById("syncFocusIdx").innerText = `${compliance.toFixed(1)}%`;
+
+                    // Handle compliance color shifts
+                    const compBar = document.getElementById("complianceBar");
+                    const compText = document.getElementById("complianceText");
+                    if (compliance >= 85) {
+                        compBar.className = "h-full bg-emerald-500 transition-all duration-300";
+                        compText.className = "text-3xl font-extrabold text-white";
+                    } else if (compliance >= 65) {
+                        compBar.className = "h-full bg-amber-500 transition-all duration-300";
+                        compText.className = "text-3xl font-extrabold text-amber-400";
+                    } else {
+                        compBar.className = "h-full bg-[#f85149] transition-all duration-300";
+                        compText.className = "text-3xl font-extrabold text-[#f85149]";
+                    }
+
+                }, 1000);
+            }
+        }
+
+        function formatSecondsToString(totalSecs) {
+            const hrs = String(Math.floor(totalSecs / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((totalSecs % 3600) / 60)).padStart(2, '0');
+            const secs = String(totalSecs % 60).padStart(2, '0');
+            return `${hrs}:${mins}:${secs}`;
+        }
+
+        // 8. Clear Audit records
+        function clearAuditRegistry() {
+            violationEvents = [];
+            totalTrackingSeconds = 0;
+            totalFocusedSeconds = 0;
+            
+            document.getElementById("sessionTimeText").innerText = "00:00:00";
+            document.getElementById("subtimerText").innerText = "Focused: 00:00:00";
+            document.getElementById("complianceText").innerText = "100.0";
+            document.getElementById("complianceBar").style.width = "100%";
+            document.getElementById("syncFocusIdx").innerText = "100.0%";
+            
+            renderAuditLogItems();
+
+            if (isProctoringActive) {
+                toggleActiveProctoring();
+            }
+
+            // Sync wipe request with backend server
+            fetch(`${FASTAPI_ADDRESS}/api/clear-logs`, { method: "POST" })
+                .catch(err => console.warn("Backend offline, cleared logs inside browser memory space."));
+        }
+
+        // 9. Tone Generator & Web audio alerts sound synthesizer
+        function playDigitalAlarmTone(frequency = 640, duration = 0.18) {
+            const chkSound = document.getElementById("chkSound");
+            if (!chkSound.checked) return;
+
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const vibrator = audioCtx.createOscillator();
+                const gainControl = audioCtx.createGain();
+
+                vibrator.connect(gainControl);
+                gainControl.connect(audioCtx.destination);
+
+                vibrator.type = "sine";
+                vibrator.frequency.value = frequency;
+
+                gainControl.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                gainControl.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+                vibrator.start();
+                vibrator.stop(audioCtx.currentTime + duration);
+            } catch(e) {
+                console.warn("Digital alarm beeper requires initial user viewport click.", e);
+            }
+        }
+
+        function testBeep() {
+            playDigitalAlarmTone(600, 0.25);
+        }
+
+        // 10. Vocal speech warn audio controller
+        function speakSynthesizerVoiceWarning(narrativeText) {
+            const chkVoice = document.getElementById("chkVoice");
+            if (!chkVoice.checked) return;
+
+            try {
+                if ("speechSynthesis" in window) {
+                    window.speechSynthesis.cancel(); // Cancel any current utterances reading
+                    const statement = new SpeechSynthesisUtterance(narrativeText);
+                    statement.rate = 1.05;
+                    statement.pitch = 0.95;
+                    window.speechSynthesis.speak(statement);
+                }
+            } catch(e) {
+                console.error("Browser Text-to-Speech synthesizer warning voice failed:", e);
+            }
+        }
+
+        // 11. Connect settings ranges to script parameters
+        function updateSettingsFromDOM() {
+            const sens = document.getElementById("sensitivityRange").value;
+            const interval = document.getElementById("intervalRange").value;
+            const yawVal = document.getElementById("yawRange").value;
+
+            settings.sensitivity = parseInt(sens);
+            settings.gazeIntervalThreshold = parseFloat(interval);
+            settings.headYawThreshold = parseFloat(yawVal);
+
+            // Webcam feed opacity adjustment
+            const opacityRange = document.getElementById("opacityRange");
+            if (opacityRange) {
+                const opacityVal = opacityRange.value;
+                document.getElementById("opacityLbl").innerText = `${opacityVal}%`;
+                const videoEl = document.getElementById("webcamVideo");
+                if (videoEl) {
+                    videoEl.style.opacity = parseFloat(opacityVal) / 100;
+                }
+            }
+
+            // Render labels
+            document.getElementById("sensLbl").innerText = `Level ${sens}`;
+            document.getElementById("intervalLbl").innerText = `${interval}s`;
+            document.getElementById("yawLbl").innerText = `${yawVal}°`;
+        }
+
+        // Custom notification helper
+        function showNotification(message, type = "info") {
+            const container = document.getElementById("toastContainer");
+            if (!container) return;
+
+            const toast = document.createElement("div");
+            toast.className = `px-4 py-2 bg-[#090d16]/95 backdrop-blur border text-xs font-semibold leading-normal shadow-2xl rounded-lg flex items-center gap-2 pointer-events-auto transform translate-x-12 opacity-0 transition-all duration-300`;
+            
+            if (type === "success") {
+                toast.className += " border-emerald-500/25 text-emerald-400";
+                toast.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i> <span>${message}</span>`;
+            } else if (type === "warning") {
+                toast.className += " border-rose-500/25 text-rose-400";
+                toast.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400"></i> <span>${message}</span>`;
+            } else {
+                toast.className += " border-[#58a6ff]/25 text-[#58a6ff]";
+                toast.innerHTML = `<i data-lucide="info" class="w-4 h-4 text-[#58a6ff]"></i> <span>${message}</span>`;
+            }
+
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            // Slide in animation
+            setTimeout(() => {
+                toast.classList.remove("translate-x-12", "opacity-0");
+                toast.classList.add("translate-x-0", "opacity-100");
+            }, 10);
+
+            // Fade out run
+            setTimeout(() => {
+                toast.classList.remove("translate-x-0", "opacity-100");
+                toast.classList.add("translate-x-12", "opacity-0");
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // 12. Connect Gemini report summarize API directly
+        function requestGeminiReport() {
+            const candidate = document.getElementById("candidateNameInput").value;
+            const role = document.getElementById("roleInput").value;
+            const loader = document.getElementById("aiSummaryLoading");
+            const reportBox = document.getElementById("reportContainer");
+            const markdownDiv = document.getElementById("reportMarkdownText");
+
+            if (!candidate) {
+                alert("Please write a Candidate Name to compile the summary evaluation!");
+                return;
+            }
+
+            loader.className = "mt-4 p-4 text-center text-slate-300 text-xs bg-[#090d16]/40 border border-white/5 rounded-xl space-y-2";
+            reportBox.className = "hidden";
+
+            const compliancePercent = (totalTrackingSeconds > 0) ? (totalFocusedSeconds / totalTrackingSeconds) * 100 : 100.0;
+
+            const payload = {
+                candidateName: candidate,
+                interviewId: role || "Proctor Candidate",
+                date: new Date().toLocaleDateString(),
+                durationSeconds: totalTrackingSeconds,
+                focusedPercentage: compliancePercent,
+                totalViolations: violationEvents.length,
+                events: violationEvents
+            };
+
+            fetch(`${FASTAPI_ADDRESS}/api/generate-summary`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(e => { throw new Error(e.error || "Network error") });
+                }
+                return res.json();
+            })
+            .then(data => {
+                loader.className = "hidden";
+                reportBox.className = "mt-4 border border-white/5 rounded-lg bg-slate-950/60 p-4 relative overflow-hidden";
+                
+                // Format markdown response into beautifully rendered custom HTML inside single page!
+                markdownDiv.innerHTML = parseMarkdownToResponsiveHTML(data.summary);
+            })
+            .catch(err => {
+                loader.className = "hidden";
+                alert(`Report compilation failed!\n\nReason: ${err.message}\nEnsure your local python FastAPI server is active, GEMINI_API_KEY environment variable is configured, and libraries are installed.`);
+            });
+        }
+
+        // Helper markdown parser
+        function parseMarkdownToResponsiveHTML(text) {
+            if (!text) return "";
+            
+            // Clean lines array parsing
+            const lines = text.split("\n");
+            let renderedHtml = "";
+
+            lines.forEach((line) => {
+                let trimmed = line.trim();
+
+                // Assess head tags
+                if (trimmed.startsWith("### ")) {
+                    renderedHtml += `<h4 class="text-xs font-bold text-[#58a6ff] uppercase tracking-wider mt-3 mb-1.5">${trimmed.replace("### ", "")}</h4>`;
+                } else if (trimmed.startsWith("## ")) {
+                    renderedHtml += `<h3 class="text-sm font-bold text-white border-b border-white/5 pb-1 mt-4 mb-2 uppercase hover:text-[#58a6ff] transition-all">${trimmed.replace("## ", "")}</h3>`;
+                } else if (trimmed.startsWith("# ")) {
+                    renderedHtml += `<h2 class="text-base font-extrabold text-[#58a6ff] border-b-2 border-white/10 pb-1.5 mt-5 mb-3 uppercase tracking-wider">${trimmed.replace("# ", "")}</h2>`;
+                }
+                // Bullet lines
+                else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+                    let cleanContent = trimmed.replace(/^[-*]\s+/, "");
+                    // Swap bold symbols
+                    cleanContent = cleanContent.replace(/\*\*(.*?)\*\"/g, `<strong class="font-bold text-[#5c98ff]">$1</strong>`);
+                    renderedHtml += `<li class="ml-4 list-disc text-[11px] text-slate-300 mb-1 leading-normal">${cleanContent}</li>`;
+                }
+                // Standard block paragraphs
+                else if (trimmed !== "") {
+                    // Swap bold symbols
+                    let cleanContent = trimmed.replace(/\*\*(.*?)\*\*/g, `<strong class="font-bold text-[#5c98ff]">$1</strong>`);
+                    renderedHtml += `<p class="text-[11px] text-slate-300 leading-relaxed mb-2">${cleanContent}</p>`;
+                } else {
+                    renderedHtml += `<div class="h-1"></div>`;
+                }
+            });
+
+            return renderedHtml;
+        }
+
+        // Copy evaluation results
+        function copyReportText() {
+            const reportDiv = document.getElementById("reportMarkdownText");
+            const btnTxt = document.getElementById("copyBtnTxt");
+
+            // Copies raw text context
+            navigator.clipboard.writeText(reportDiv.innerText)
+                .then(() => {
+                    btnTxt.innerText = "COPIED!";
+                    setTimeout(() => { btnTxt.innerText = "Copy"; }, 1500);
+                });
+        }
+    </script>
+</body>
+</html>
