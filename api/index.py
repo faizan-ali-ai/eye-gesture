@@ -43,24 +43,6 @@ class GenerateReportRequest(BaseModel):
     totalViolations: int
     events: List[LogEntry]
 
-# --- FRONTEND ROUTE ---
-@app.get("/")
-async def serve_frontend():
-    # Yeh automatic perfect path nikalega chahe file local ho ya Vercel par
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    html_path = os.path.join(BASE_DIR, "single_index.html")
-    
-    try:
-        with open(html_path, "r", encoding="utf-8") as f:
-            html_content = f.read()
-        # Explicitly media_type dena zaroori hai taake browser download na kare
-        return HTMLResponse(content=html_content, status_code=200, media_type="text/html")
-    except Exception as e:
-        return HTMLResponse(
-            content=f"<h1>Frontend File Not Found</h1><p>Expected Path: {html_path}</p><p>Error: {str(e)}</p>", 
-            status_code=404, 
-            media_type="text/html"
-        )
 
 # --- Health Stats ---
 @app.get("/status")

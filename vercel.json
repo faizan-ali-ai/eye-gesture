@@ -4,12 +4,32 @@
     {
       "src": "api/index.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "single_index.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/api/(.*)",
       "dest": "api/index.py"
+    },
+    {
+      "src": "/logs",
+      "dest": "api/index.py"
+    },
+    {
+      "src": "/status",
+      "dest": "api/index.py"
+    },
+    {
+      "src": "/video_feed",
+      "dest": "api/index.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "single_index.html"
     }
   ]
 }
