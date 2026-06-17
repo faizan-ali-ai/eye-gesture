@@ -5,7 +5,7 @@ All-in-one single-file Python FastAPI server modified for Vercel Serverless.
 
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse, JSONResponse, HTMLResponse
 from pydantic import BaseModel
 import cv2
 import os
@@ -13,31 +13,17 @@ import time
 import json
 import asyncio
 from typing import Optional, List
-from fastapi.responses import HTMLResponse
 
 app = FastAPI(title="OmniControl AI Proctoring Backend")
 
-# 1. CORS Middleware (Essential to fix browser blocking issues!)
+# 1. CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows local index.html to communicate freely
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# --- FRONTEND ROUTE ---
-@app.get("/", response_class=HTMLResponse)
-async def serve_frontend():
-    # Kyun ke ab file index.py ke sath hi padi hai, to path nikalna bohot aasan hai
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    html_path = os.path.join(BASE_DIR, "single_index.html")
-    
-    try:
-        with open(html_path, "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read(), status_code=200)
-    except Exception as e:
-        return HTMLResponse(content=f"<h1>Frontend File Not Found</h1><p>Error: {str(e)}</p>", status_code=404)
 
 # Global In-Memory Stores
 logs_db = []
@@ -57,8 +43,27 @@ class GenerateReportRequest(BaseModel):
     totalViolations: int
     events: List[LogEntry]
 
-# --- Home & Health Stats ---
+# --- FRONTEND ROUTE ---
 @app.get("/")
+async def serve_frontend():
+    # Yeh automatic perfect path nikalega chahe file local ho ya Vercel par
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    html_path = os.path.join(BASE_DIR, "single_index.html")
+    
+    try:
+        with open(html_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+        # Explicitly media_type dena zaroori hai taake browser download na kare
+        return HTMLResponse(content=html_content, status_code=200, media_type="text/html")
+    except Exception as e:
+        return HTMLResponse(
+            content=f"<h1>Frontend File Not Found</h1><p>Expected Path: {html_path}</p><p>Error: {str(e)}</p>", 
+            status_code=404, 
+            media_type="text/html"
+        )
+
+# --- Health Stats ---
+@app.get("/status")
 async def root():
     return {
         "status": "Online",
@@ -165,13 +170,12 @@ Ensure your tone is completely objective and professional. Do not write generic 
             content={"error": f"An error occurred on the Python host while generating your report: {str(e)}"}
         )
 
-# --- OpenCV Video Feed Route (Vercel Safe Option) ---
+# --- OpenCV Video Feed Route ---
 camera = None
 
 def get_camera_frame():
     global camera
     
-    # VERIFICATION: Agar code Vercel cloud par chal raha hai to actual camera open na karein (taake server crash na ho)
     if os.environ.get("VERCEL") == "1":
         dummy_frame = cv2.Mat.zeros(480, 640, cv2.CV_8UC3)
         cv2.putText(dummy_frame, "Live Stream Hosted (Cloud Node Active)", (80, 240),
@@ -179,7 +183,6 @@ def get_camera_frame():
         ret, jpeg = cv2.imencode('.jpg', dummy_frame)
         return jpeg.tobytes()
 
-    # Local environment ke liye camera handle
     if camera is None:
         camera = cv2.VideoCapture(0)
     
@@ -204,7 +207,3 @@ def gen_frames():
 @app.get('/video_feed')
 def video_feed():
     return StreamingResponse(gen_frames(), media_type='multipart/x-mixed-replace; boundary=frame')
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("fastapi_main:app", host="127.0.0.1", port=8000, reload=True)
