@@ -27,17 +27,19 @@ app.add_middleware(
 )
 
 # --- FRONTEND ROUTE ---
+# --- FRONTEND ROUTE ---
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
-    # File ka absolute path nikalna taake Vercel par error na aaye
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    html_path = os.path.join(BASE_DIR, "single_index.html")
+    # Vercel par root directory '/var/task' hoti hai, yeh dono jagah sahi kaam karega
+    root_dir = os.environ.get("LAMBDA_TASK_ROOT", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    html_path = os.path.join(root_dir, "single_index.html")
     
     try:
         with open(html_path, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read(), status_code=200)
     except Exception as e:
-        return HTMLResponse(content=f"<h1>Frontend File Not Found</h1><p>{str(e)}</p>", status_code=404)
+        # Agar phir bhi koi issue aaye to yeh sath sahi path bhi dikha rha hoga debug ke liye
+        return HTMLResponse(content=f"<h1>Frontend File Not Found</h1><p>Attempted path: {html_path}</p><p>Error: {str(e)}</p>", status_code=404)
 
 # Global In-Memory Stores
 logs_db = []
